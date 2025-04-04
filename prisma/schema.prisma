@@ -1,0 +1,74 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String      @id @default(uuid())
+  name        String
+  lastName    String?
+  phoneNumber String
+  email       String      @unique
+  password    String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  products    Product[] // Relación: un usuario puede tener varios productos
+  saleMedias  SaleMedia[] // Relación: un usuario puede tener varios medios de venta
+}
+
+model Product {
+  id           String                @id @default(uuid())
+  name         String
+  price        Float
+  stock        Int
+  userId       String
+  user         User                  @relation(fields: [userId], references: [id])
+  sales        SaleProduct[] // Relación: un producto puede tener varias ventas
+  priceHistory PriceProductHistory[] // Relación con el historial de precios
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+}
+
+model PriceProductHistory {
+  id                     String   @id @default(uuid()) // Identificador único para cada entrada
+  productId              String // ID del producto asociado
+  product                Product  @relation(fields: [productId], references: [id]) // Relación con el producto
+  priceDollar            Float // Precio en dólares
+  priceBuyLocalCurrency  Float // Precio de compra en moneda local
+  priceSaleLocalCurrency Float // Precio de venta en moneda local
+  reason                 String? // Razón del cambio de precio (opcional, útil para auditoría)
+  changedBy              String? // ID del usuario que realizó el cambio (opcional)
+  createdAt              DateTime @default(now()) // Fecha de creación del registro
+  updatedAt              DateTime @updatedAt
+}
+
+model SaleProduct {
+  id          String    @id @default(uuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  quantity    Int
+  totalAmount Float
+  unitPrice   Float // Precio unitario del producto en la venta
+  newPrice    Float? // Precio ajustado para esta venta específica
+  saleMediaId String
+  saleMedia   SaleMedia @relation(fields: [saleMediaId], references: [id]) // Relación con el medio de venta
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model SaleMedia {
+  id        String        @id @default(uuid())
+  name      String
+  isActive  Boolean       @default(true)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  sales     SaleProduct[] // Relación: un medio de venta puede tener varias ventas
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
