@@ -6,7 +6,10 @@ import { envs } from './config';
 async function bootstrap() {
   const logger = new Logger('api admin ML');
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: ['https://stock-manager-front-4wzh.onrender.com/'],
+    credentials: true,
+  });
   app.setGlobalPrefix('api')
   app.useGlobalPipes(
     new ValidationPipe({
