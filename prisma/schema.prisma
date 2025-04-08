@@ -9,6 +9,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
 model User {
   id          String      @id @default(uuid())
   name        String
@@ -16,6 +22,7 @@ model User {
   phoneNumber String
   email       String      @unique
   password    String
+  role        Role        @default(USER) // 👈 Aquí agregamos el rol con valor por defecto "USER"
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   products    Product[] // Relación: un usuario puede tener varios productos

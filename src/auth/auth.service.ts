@@ -3,7 +3,7 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthEntity } from './entities/auth.entity';
+import { AuthEntity, Role } from './entities/auth.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
@@ -27,7 +27,8 @@ export class AuthService {
       email: user.email,
       name: user.name,
       lastName: user.lastName,
-      token
+      token,
+      role: user?.role as Role
     };
   }
 
