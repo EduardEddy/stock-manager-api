@@ -23,16 +23,16 @@ export class ProductsController {
 
   @Get(':id')
   findOne(@Param('id') id: string, @GetUser() user) {
-    return this.productsService.findOne(id, user.id);
+    //return this.productsService.findOne(id, user.id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @GetUser() user) {
-    return this.productsService.update(+id, updateProductDto);
+    //return this.productsService.update(+id, updateProductDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @GetUser() user) {
-    return this.productsService.remove(+id);
+    //return this.productsService.remove(+id);
   }
 }

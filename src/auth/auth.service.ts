@@ -14,14 +14,25 @@ export class AuthService {
   ) { }
 
   async login(createAuthDto: CreateAuthDto): Promise<AuthEntity> {
+    //this.logger.debug(`Attempting login for email: ${createAuthDto.email}`);
+
     const user = await this.prisma.user.findFirst({ where: { email: createAuthDto.email } });
+    //this.logger.debug(`User found: ${JSON.stringify(user)}`);
 
     if (!user || !(await bcrypt.compare(createAuthDto.password, user.password))) {
+      //this.logger.error('Invalid credentials');
       throw new UnauthorizedException("Credenciales invalidas");
     }
 
-    const payload = { sub: user.id, username: user.email };
+    const payload: JwtPayload = {
+      email: user.email,
+      id: user.id,
+      name: user.name
+    };
+
+    //this.logger.debug(`Generating token with payload: ${JSON.stringify(payload)}`);
     const token = await this.jwtService.signAsync(payload);
+
     return {
       id: user.id,
       email: user.email,

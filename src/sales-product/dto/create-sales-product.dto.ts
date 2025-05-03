@@ -1,6 +1,7 @@
-import { IsNumber, IsPositive, IsString, IsUUID } from "class-validator"
+import { IsArray, IsNumber, IsPositive, IsString, IsUUID, ValidateNested } from "class-validator"
+import { Type } from "class-transformer"
 
-export class CreateSalesProductDto {
+export class SaleItemDto {
   @IsString()
   @IsUUID()
   productId
@@ -31,4 +32,22 @@ export class CreateSalesProductDto {
 
   @IsString()
   saleMediaId
+}
+
+
+// DTO principal para la venta completa
+export class CreateSalesProductDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SaleItemDto)
+  items: SaleItemDto[];
+
+  @IsString()
+  saleMediaId: string;
+
+  @IsNumber({
+    allowNaN: false,
+    maxDecimalPlaces: 2,
+  })
+  totalAmount: number;
 }

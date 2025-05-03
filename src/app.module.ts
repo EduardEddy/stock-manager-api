@@ -11,9 +11,11 @@ import { SalesMediaModule } from './sales-media/sales-media.module';
 import { PrismaService } from './prisma/prisma.service';
 import { UploadProductsModule } from './upload-products/upload-products.module';
 import { MulterModule } from '@nestjs/platform-express';
+import { SaleModule } from './sale/sale.module';
+
 
 @Module({
-  imports: [RegisterModule, AuthModule, ProductsModule, PriceProductHistoryModule, SalesProductModule, SalesMediaModule, UploadProductsModule, MulterModule.register({ dest: "./uploads" })],
+  imports: [RegisterModule, AuthModule, ProductsModule, PriceProductHistoryModule, SalesProductModule, SalesMediaModule, UploadProductsModule, MulterModule.register({ dest: "./uploads" }), SaleModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

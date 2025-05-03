@@ -6,7 +6,8 @@ interface EnvVars {
   PORT: number;
   SALT: number;
   SECRET_KEY: string;
-  FRONT_ORIGIN: string
+  FRONT_ORIGIN: string;
+  DOLLAR_APIKEY: string;
 }
 
 const envVarsSchema = joi
@@ -15,6 +16,7 @@ const envVarsSchema = joi
     SALT: joi.number().required(),
     SECRET_KEY: joi.string().required(),
     FRONT_ORIGIN: joi.string().required(),
+    DOLLAR_APIKEY: joi.string().required(),
   })
   .unknown();
 
@@ -31,4 +33,5 @@ export const envs = {
   salt: envVars.SALT,
   secretKey: envVars.SECRET_KEY,
   frontOrigin: envVars.FRONT_ORIGIN,
+  dollarApiKey: envVars.DOLLAR_APIKEY,
 };

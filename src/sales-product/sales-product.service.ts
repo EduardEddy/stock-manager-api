@@ -20,21 +20,40 @@ export class SalesProductService {
     try {
 
       let saleMedia: SalesMedia = await this.salesMediaService.findOne(createSalesProductDto.saleMediaId);
-      this.logger.debug("Estamos llegando aca: ", saleMedia);
+      this.logger.debug("Estamos llegando aca: ", createSalesProductDto.saleMediaId);
       if (!saleMedia) {
         saleMedia = await this.salesMediaService.create({ name: createSalesProductDto.saleMediaId, userId });
       }
       createSalesProductDto.saleMediaId = saleMedia.id;
-      const salesProduct = await this.prisma.saleProduct.create({
+      for (const item of createSalesProductDto.items) {
+        /*const saleProduct = await this.prisma.saleProduct.create({
+          data: {
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalAmount: item.totalAmount,
+            newPrice: item.unitPrice,
+            saleMediaId: saleMedia.id
+          }
+        });*/
+
+        await this.saleProduct.updateStock(
+          userId,
+          item.productId,
+          item.quantity,
+          item.unitPrice
+        );
+      }
+      /*const salesProduct = await this.prisma.saleProduct.create({
         data: createSalesProductDto
       });
 
       await this.saleProduct.updateStock(
         createSalesProductDto.productId,
         createSalesProductDto.quantity, userId
-      );
+      );*/
 
-      return salesProduct;
+      return { message: "success" };
     } catch (error) {
       this.logger.error("ERROR on SalesProductService create: ", error);
       throw new InternalServerErrorException("Error on create function");
@@ -42,7 +61,7 @@ export class SalesProductService {
   }
 
   async findAll(userId: string) {
-    return this.prisma.saleProduct.findMany({
+    /*return this.prisma.saleProduct.findMany({
       where: {
         product: {
           userId: userId, // Filtra por el usuario dueño del producto
@@ -55,7 +74,7 @@ export class SalesProductService {
       orderBy: {
         createdAt: "desc"
       }
-    });
+    });*/
   }
 
   findOne(id: number) {

@@ -15,67 +15,139 @@ enum Role {
   SUPERADMIN
 }
 
+enum SaleStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id          String      @id @default(uuid())
   name        String
   lastName    String?
-  phoneNumber String
+  phoneNumber String?
   email       String      @unique
   password    String
-  role        Role        @default(USER) // 👈 Aquí agregamos el rol con valor por defecto "USER"
+  role        Role        @default(USER)
+  active      Boolean     @default(true)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  products    Product[] // Relación: un usuario puede tener varios productos
-  saleMedias  SaleMedia[] // Relación: un usuario puede tener varios medios de venta
+  products    Product[]
+  saleMedias  SaleMedia[]
+  clientSales Sale[]      @relation("ClientSales")
+  salesMade   Sale[]      @relation("SalesMade")
+  inventory   Inventory?
 }
 
 model Product {
-  id           String                @id @default(uuid())
-  name         String
-  price        Float
-  stock        Int
-  userId       String
-  user         User                  @relation(fields: [userId], references: [id])
-  sales        SaleProduct[] // Relación: un producto puede tener varias ventas
-  priceHistory PriceProductHistory[] // Relación con el historial de precios
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
+  id               String                @id @default(uuid())
+  aditionalId      String?
+  name             String
+  description      String?
+  price            Float
+  cost             Float? // Costo de adquisición
+  stock            Int
+  minimumStock     Int                   @default(5) // Nivel mínimo de stock antes de alertar
+  barcode          String? // Código de barras para fácil escaneo
+  category         String? // Categoría del producto
+  userId           String // Usuario dueño del producto
+  user             User                  @relation(fields: [userId], references: [id])
+  inventoryId      String? // Relación opcional con inventario
+  inventory        Inventory?            @relation(fields: [inventoryId], references: [id])
+  saleItems        SaleItem[] // Productos vendidos en las ventas
+  priceHistory     PriceProductHistory[] // Historial de precios
+  imagePath        String? // Ruta a la imagen del producto
+  active           Boolean               @default(true)
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  inventoryEntries InventoryEntry[] // Entradas de inventario
 }
 
 model PriceProductHistory {
-  id                     String   @id @default(uuid()) // Identificador único para cada entrada
-  productId              String // ID del producto asociado
-  product                Product  @relation(fields: [productId], references: [id]) // Relación con el producto
-  priceDollar            Float // Precio en dólares
-  priceBuyLocalCurrency  Float // Precio de compra en moneda local
-  priceSaleLocalCurrency Float // Precio de venta en moneda local
-  reason                 String? // Razón del cambio de precio (opcional, útil para auditoría)
-  changedBy              String? // ID del usuario que realizó el cambio (opcional)
-  createdAt              DateTime @default(now()) // Fecha de creación del registro
+  id                     String   @id @default(uuid())
+  productId              String
+  product                Product  @relation(fields: [productId], references: [id])
+  priceDollar            Float
+  priceBuyLocalCurrency  Float
+  priceSaleLocalCurrency Float
+  reason                 String?
+  changedBy              String?
+  createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
 
-model SaleProduct {
-  id          String    @id @default(uuid())
+model Sale {
+  id          String     @id @default(uuid())
+  reference   String? // Número de referencia o factura
+  totalAmount Float // Monto total de la venta
+  discount    Float? // Descuento aplicado a toda la venta
+  tax         Float? // Impuesto aplicado
+  finalAmount Float // Monto final después de descuentos e impuestos
+  status      SaleStatus @default(PENDING)
+  notes       String? // Notas adicionales sobre la venta
+  saleMediaId String // Medio por el que se realizó la venta (Instagram, Mercado Libre, etc.)
+  saleMedia   SaleMedia  @relation(fields: [saleMediaId], references: [id])
+  sellerId    String? // Usuario que realizó la venta (opcional)
+  seller      User?      @relation("SalesMade", fields: [sellerId], references: [id])
+  clientId    String? // Cliente opcional (puede ser anónimo)
+  client      User?      @relation("ClientSales", fields: [clientId], references: [id])
+  items       SaleItem[] // Productos incluidos en la venta
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model SaleItem {
+  id          String   @id @default(uuid())
+  saleId      String
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
   productId   String
-  product     Product   @relation(fields: [productId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
   quantity    Int
-  totalAmount Float
-  unitPrice   Float // Precio unitario del producto en la venta
-  newPrice    Float? // Precio ajustado para esta venta específica
-  saleMediaId String
-  saleMedia   SaleMedia @relation(fields: [saleMediaId], references: [id]) // Relación con el medio de venta
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  unitPrice   Float // Precio unitario al momento de la venta
+  customPrice Float? // Precio personalizado, si se aplicó
+  discount    Float? // Descuento específico para este ítem
+  total       Float // Total para este ítem
+  notes       String? // Notas específicas de este ítem
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model SaleMedia {
-  id        String        @id @default(uuid())
-  name      String
-  isActive  Boolean       @default(true)
-  userId    String
-  user      User          @relation(fields: [userId], references: [id])
-  sales     SaleProduct[] // Relación: un medio de venta puede tener varias ventas
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id          String   @id @default(uuid())
+  name        String // Nombre del medio (Instagram, Mercado Libre, Facebook Marketplace, etc.)
+  description String?
+  isActive    Boolean  @default(true)
+  commission  Float? // Posible comisión por ventas en este medio
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  sales       Sale[] // Ventas realizadas por este medio
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Inventory {
+  id          String           @id @default(uuid())
+  name        String
+  description String?
+  userId      String           @unique // Un usuario tiene un inventario
+  user        User             @relation(fields: [userId], references: [id])
+  products    Product[] // Productos en este inventario
+  entries     InventoryEntry[] // Entradas de inventario
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model InventoryEntry {
+  id          String    @id @default(uuid())
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  quantity    Int // Cantidad de productos (positivo para entrada, negativo para salida)
+  type        String // "PURCHASE", "SALE", "ADJUSTMENT", "RETURN", etc.
+  cost        Float? // Costo unitario de compra, si aplica
+  reference   String? // Referencia al documento (factura, etc)
+  notes       String? // Notas adicionales
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

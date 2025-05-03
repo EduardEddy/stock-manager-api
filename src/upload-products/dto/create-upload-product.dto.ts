@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from "class-validator"
+import { IsNumber, IsOptional, IsString } from "class-validator"
 
 export class CreateUploadProductDto {
   @IsString()
@@ -12,4 +12,8 @@ export class CreateUploadProductDto {
 
   @IsString()
   userId: string
+
+  @IsString()
+  @IsOptional()
+  aditionalId: string
 }

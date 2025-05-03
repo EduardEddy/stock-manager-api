@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { RegisterService } from './register.service';
+import { Controller, Post, Body } from '@nestjs/common';
+import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { CreateRegisterDto } from './dto/create-register.dto';
 
 @Controller('register')
 export class RegisterController {
-  constructor(private readonly registerService: RegisterService) { }
+  constructor(private readonly registerUserUseCase: RegisterUserUseCase) { }
 
   @Post()
-  create(@Body() createRegisterDto: CreateRegisterDto) {
-    return this.registerService.create(createRegisterDto);
+  async create(@Body() createRegisterDto: CreateRegisterDto) {
+    return this.registerUserUseCase.execute(createRegisterDto);
   }
 }

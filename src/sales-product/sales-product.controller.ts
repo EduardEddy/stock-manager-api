@@ -5,7 +5,7 @@ import { UpdateSalesProductDto } from './dto/update-sales-product.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorators/get-user.decorators';
 
-@Controller('sales-product')
+@Controller('sales-product-2')
 @UseGuards(AuthGuard())
 export class SalesProductController {
   constructor(private readonly salesProductService: SalesProductService) { }

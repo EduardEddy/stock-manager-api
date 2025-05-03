@@ -16,4 +16,13 @@ export class PriceProductHistoryService extends PrismaClient {
       throw new BadRequestException("Error on create function");
     }
   }
+
+  async createMany(priceProductHistory: PriceProductHistoryDto[]) {
+    try {
+      return this.priceProductHistory.createMany({ data: priceProductHistory });
+    } catch (error) {
+      this.logger.error("ERROR on create many function: ", error);
+      throw new BadRequestException("Error on create many function");
+    }
+  }
 }
